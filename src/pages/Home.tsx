@@ -1,6 +1,12 @@
 import React from 'react';
 
-export const Home: React.FC = () => {
+const CURRENT_YEAR = new Date().getFullYear();
+
+interface HomeProps {
+  onEnterStudio?: () => void;
+}
+
+export const Home: React.FC<HomeProps> = ({ onEnterStudio }) => {
   return (
     <div className="page-container">
       <style>{`
@@ -159,6 +165,25 @@ export const Home: React.FC = () => {
           <span className="brand-name">SpeakFluent</span>
           <span className="brand-tld">tech</span>
         </a>
+
+        {onEnterStudio && (
+          <button
+            onClick={onEnterStudio}
+            style={{
+              background: 'transparent',
+              border: '1px solid #E8E3DA',
+              borderRadius: '9999px',
+              padding: '8px 18px',
+              fontSize: '0.85rem',
+              color: '#1C1917',
+              cursor: 'pointer',
+              fontFamily: 'var(--sans-font)',
+              transition: 'all 0.2s',
+            }}
+          >
+            Enter Studio →
+          </button>
+        )}
       </header>
 
       {/* Main Landing Page Hero */}
@@ -170,11 +195,34 @@ export const Home: React.FC = () => {
         <p className="main-subtitle">
           A calm, refined environment for conversational poise, pronunciation, and spoken presence. Designed for those who value understated confidence over noise.
         </p>
+
+        {onEnterStudio && (
+          <div style={{ marginTop: '36px', display: 'flex', gap: '14px', alignItems: 'center' }}>
+            <button
+              onClick={onEnterStudio}
+              style={{
+                backgroundColor: '#1C1917',
+                color: '#FAF8F5',
+                padding: '14px 32px',
+                borderRadius: '9999px',
+                fontSize: '0.95rem',
+                fontWeight: 500,
+                cursor: 'pointer',
+                border: '1px solid #1C1917',
+                transition: 'all 0.2s',
+                fontFamily: 'var(--sans-font)',
+                boxShadow: '0 1px 3px rgba(28, 25, 23, 0.08)',
+              }}
+            >
+              Enter Practice Studio →
+            </button>
+          </div>
+        )}
       </main>
 
       {/* Minimal Footer */}
       <footer className="site-footer">
-        <div>© {new Date().getFullYear()} SpeakFluent. All rights reserved.</div>
+        <div>© {CURRENT_YEAR} SpeakFluent. All rights reserved.</div>
       </footer>
     </div>
   );

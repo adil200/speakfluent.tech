@@ -1,20 +1,53 @@
-/* Base reset */
-*, *::before, *::after {
+@import "tailwindcss";
+
+@theme {
+  --color-cream-bg: #FAF8F5;
+  --color-cream-surface: #FFFFFF;
+  --color-cream-subtle: #F5F1EB;
+  --color-cream-border: #E8E3DA;
+  --color-cream-border-focus: #D1C9BE;
+
+  --color-ink-primary: #1C1917;
+  --color-ink-secondary: #57534E;
+  --color-ink-muted: #8C827A;
+  --color-ink-faint: #B8B0A6;
+
+  --color-accent-optimal: #1E3A2F;
+  --color-accent-optimal-bg: #EBF4F0;
+  --color-accent-warning: #78350F;
+  --color-accent-warning-bg: #FEF3C7;
+  --color-accent-critical: #881337;
+  --color-accent-critical-bg: #FFE4E6;
+
+  --font-serif: 'Newsreader', Garamond, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+:root {
+  --cream-bg: #FAF8F5;
+  --cream-surface: #FFFFFF;
+  --cream-subtle: #F5F1EB;
+  --cream-border: #E8E3DA;
+  --ink-primary: #1C1917;
+  --ink-secondary: #57534E;
+  --ink-muted: #8C827A;
+}
+
+* {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
+body {
+  background-color: var(--cream-bg);
+  color: var(--ink-primary);
+  font-family: var(--font-sans);
   min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+/* Ambient Radial Warmth Vignette */
+.ambient-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 25%, rgba(255, 255, 255, 0.75) 0%, rgba(250, 248, 245, 0) 75%);
+  pointer-events: none;
 }
