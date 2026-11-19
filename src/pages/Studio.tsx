@@ -1,19 +1,16 @@
 import React from 'react';
 import { useSessionStore, type PracticeMode } from '../store/useSessionStore';
-import { useAudioStore } from '../store/useAudioStore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Button } from '../components/ui/Button';
+import { RecordingStudio } from '../components/audio/RecordingStudio';
 import {
   MessageSquare,
   Sparkles,
   Presentation,
   BookOpen,
-  Mic,
   Database,
   ShieldCheck,
   Cpu,
-  ArrowRight
 } from 'lucide-react';
 
 interface ModeDetails {
@@ -76,7 +73,6 @@ const MODES: ModeDetails[] = [
 
 export const Studio: React.FC = () => {
   const { currentMode, setMode } = useSessionStore();
-  const { state: audioState } = useAudioStore();
 
   const selectedMode = MODES.find((m) => m.id === currentMode) || MODES[0];
 
@@ -86,10 +82,10 @@ export const Studio: React.FC = () => {
       <div className="flex flex-col gap-2 max-w-2xl">
         <div className="flex items-center gap-2">
           <Badge variant="ink" size="sm">
-            Phase 0 Foundation
+            Phase 3 Studio
           </Badge>
           <span className="text-xs text-[#8C827A]">•</span>
-          <span className="text-xs text-[#8C827A] font-medium">Acoustic Studio Shell</span>
+          <span className="text-xs text-[#8C827A] font-medium">Acoustic Waveform Active</span>
         </div>
         <h1 className="font-serif text-3xl sm:text-4xl text-[#1C1917] tracking-tight">
           Select your speaking <em className="italic font-light text-[#44403C]">discipline</em>.
@@ -164,38 +160,8 @@ export const Studio: React.FC = () => {
         </CardHeader>
 
         <CardContent className="pt-4">
-          {/* Audio Studio Standby Box */}
-          <div className="border border-dashed border-[#D1C9BE] rounded-xl p-8 bg-white/70 flex flex-col items-center justify-center text-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-[#FAF8F5] border border-[#E8E3DA] flex items-center justify-center text-[#1C1917]">
-              <Mic className="w-6 h-6" />
-            </div>
-
-            <div className="flex flex-col gap-1 max-w-md">
-              <div className="flex items-center justify-center gap-2">
-                <h4 className="font-serif text-lg text-[#1C1917]">
-                  Acoustic Studio Ready (Phase 3 Preparation)
-                </h4>
-                <Badge variant="neutral" size="sm">
-                  {audioState}
-                </Badge>
-              </div>
-              <p className="text-xs text-[#57534E] leading-relaxed">
-                The recording canvas, Web Audio analyzer, and live waveform visualizer will initialize here in
-                Phase 3. Client audio blobs are persisted into IndexedDB (<code className="font-mono text-[11px]">speakfluent_local_vault</code>).
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3 mt-2">
-              <Button size="md" variant="primary" className="gap-2">
-                <Mic className="w-4 h-4" />
-                <span>Begin Studio Session</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-              <Button size="md" variant="outline">
-                Practice Guidelines
-              </Button>
-            </div>
-          </div>
+          {/* Live High-Craft Acoustic Recording Studio */}
+          <RecordingStudio />
 
           {/* Infrastructure Health & Diagnostics Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-6 border-t border-[#E8E3DA]/80 text-xs">
