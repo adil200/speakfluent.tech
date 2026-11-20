@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useSessionStore } from '../../store/useSessionStore';
 import { useAudioRecorder } from '../../hooks/useAudioRecorder';
+import { useLiveASR } from '../../hooks/useLiveASR';
 import { WaveformCanvas } from './WaveformCanvas';
 import { AudioPlayer } from './AudioPlayer';
+import { LiveTranscriptViewer } from './LiveTranscriptViewer';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Mic, Square, Pause, Play, AlertCircle, Sparkles } from 'lucide-react';
@@ -10,6 +12,8 @@ import { Mic, Square, Pause, Play, AlertCircle, Sparkles } from 'lucide-react';
 export const RecordingStudio: React.FC = () => {
   const { currentMode, activeSessionId, startSession } = useSessionStore();
   const [sessionId] = useState(() => activeSessionId || `session_${Date.now()}`);
+
+  const liveASR = useLiveASR();
 
   const {
     recordingState,
@@ -22,21 +26,31 @@ export const RecordingStudio: React.FC = () => {
     resumeRecording,
     stopRecording,
     resetRecording,
-  } = useAudioRecorder(sessionId);
+  } = useAudioRecorder(sessionId, {
+    onAudioChunk: liveASR.sendAudioChunk,
+  });
 
   const [validationWarning, setValidationWarning] = useState<string | null>(null);
 
-  const handleStart = () => {
+  const handleStart = async () => {
     setValidationWarning(null);
+    liveASR.clearTranscript();
+    await liveASR.connect();
     if (!activeSessionId) startSession(sessionId);
     startCountdown();
   };
 
   const handleStop = async () => {
+    liveASR.disconnect();
     const blob = await stopRecording();
     if (blob && durationMs < 5000) {
       setValidationWarning('Take is under 5 seconds (Rule BR-07). Speech analytics require a longer response.');
     }
+  };
+
+  const handleReset = () => {
+    liveASR.clearTranscript();
+    resetRecording();
   };
 
   const formatTimer = (ms: number) => {
@@ -114,8 +128,15 @@ export const RecordingStudio: React.FC = () => {
         )}
       </div>
 
+      {/* Live Verbatim Transcription Display */}
+      <LiveTranscriptViewer
+        transcript={liveASR.transcriptText}
+        words={liveASR.words}
+        isRecording={recordingState === 'recording'}
+      />
+
       {/* Interactive Controls & States */}
-      <div className="flex flex-col items-center justify-center gap-4 py-4">
+      <div className="flex flex-col items-center justify-center gap-4 py-2">
         {recordingState === 'idle' && (
           <Button size="lg" variant="primary" onClick={handleStart} className="gap-2.5 px-8">
             <Mic className="w-5 h-5 text-[#FAF8F5]" />
@@ -150,10 +171,10 @@ export const RecordingStudio: React.FC = () => {
 
         {recordingState === 'completed' && audioUrl && (
           <div className="w-full flex flex-col gap-4">
-            <AudioPlayer audioUrl={audioUrl} durationMs={durationMs} onReset={resetRecording} />
+            <AudioPlayer audioUrl={audioUrl} durationMs={durationMs} onReset={handleReset} />
 
             <div className="flex items-center justify-end gap-3 mt-2">
-              <Button size="md" variant="outline" onClick={resetRecording}>
+              <Button size="md" variant="outline" onClick={handleReset}>
                 Record Another Take
               </Button>
 
@@ -163,7 +184,7 @@ export const RecordingStudio: React.FC = () => {
                 disabled={durationMs < 5000}
                 className="gap-2"
                 onClick={() => {
-                  alert('Ready for Phase 4: Real-time ASR & Multi-Agent Deliberation Pipeline!');
+                  alert('Ready for Phase 5: Cloudflare Edge Storage & Multi-Agent Deliberation Pipeline!');
                 }}
               >
                 <span>Submit to AI Coach</span>

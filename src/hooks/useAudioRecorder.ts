@@ -2,6 +2,10 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useAudioStore } from '../store/useAudioStore';
 import { audioStorage } from '../lib/storage/audioStorage';
 
+export interface UseAudioRecorderOptions {
+  onAudioChunk?: (chunk: Blob) => void;
+}
+
 export interface UseAudioRecorderReturn {
   recordingState: string;
   durationMs: number;
@@ -16,13 +20,21 @@ export interface UseAudioRecorderReturn {
   resetRecording: () => void;
 }
 
-export function useAudioRecorder(sessionId: string): UseAudioRecorderReturn {
+export function useAudioRecorder(
+  sessionId: string,
+  options?: UseAudioRecorderOptions
+): UseAudioRecorderReturn {
   const { state, setState } = useAudioStore();
   const [durationMs, setDurationMs] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
+
+  const onAudioChunkRef = useRef(options?.onAudioChunk);
+  useEffect(() => {
+    onAudioChunkRef.current = options?.onAudioChunk;
+  }, [options?.onAudioChunk]);
 
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -81,6 +93,7 @@ export function useAudioRecorder(sessionId: string): UseAudioRecorderReturn {
       recorder.ondataavailable = (e) => {
         if (e.data && e.data.size > 0) {
           chunksRef.current.push(e.data);
+          onAudioChunkRef.current?.(e.data);
         }
       };
 
