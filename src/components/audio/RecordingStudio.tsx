@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useSessionStore } from '../../store/useSessionStore';
 import { useAudioRecorder } from '../../hooks/useAudioRecorder';
 import { useLiveASR } from '../../hooks/useLiveASR';
+import { useAudioUpload } from '../../hooks/useAudioUpload';
 import { WaveformCanvas } from './WaveformCanvas';
 import { AudioPlayer } from './AudioPlayer';
 import { LiveTranscriptViewer } from './LiveTranscriptViewer';
+import { UploadProgressBanner } from './UploadProgressBanner';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Mic, Square, Pause, Play, AlertCircle, Sparkles } from 'lucide-react';
@@ -14,10 +16,12 @@ export const RecordingStudio: React.FC = () => {
   const [sessionId] = useState(() => activeSessionId || `session_${Date.now()}`);
 
   const liveASR = useLiveASR();
+  const audioUpload = useAudioUpload();
 
   const {
     recordingState,
     durationMs,
+    audioBlob,
     audioUrl,
     analyserNode,
     errorMessage,
@@ -35,6 +39,7 @@ export const RecordingStudio: React.FC = () => {
   const handleStart = async () => {
     setValidationWarning(null);
     liveASR.clearTranscript();
+    audioUpload.resetUpload();
     await liveASR.connect();
     if (!activeSessionId) startSession(sessionId);
     startCountdown();
@@ -50,7 +55,16 @@ export const RecordingStudio: React.FC = () => {
 
   const handleReset = () => {
     liveASR.clearTranscript();
+    audioUpload.resetUpload();
     resetRecording();
+  };
+
+  const handleSubmitToCoach = async () => {
+    if (!audioBlob) return;
+    const success = await audioUpload.uploadAudio(sessionId, audioBlob);
+    if (success) {
+      // Ready for Phase 6: Multi-Agent Deliberation Pipeline
+    }
   };
 
   const formatTimer = (ms: number) => {
@@ -59,6 +73,11 @@ export const RecordingStudio: React.FC = () => {
     const secs = totalSec % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const isUploading =
+    audioUpload.state === 'requesting_url' ||
+    audioUpload.state === 'uploading' ||
+    audioUpload.state === 'confirming';
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-3xl mx-auto">
@@ -135,6 +154,13 @@ export const RecordingStudio: React.FC = () => {
         isRecording={recordingState === 'recording'}
       />
 
+      {/* Upload Archiving Progress Banner */}
+      <UploadProgressBanner
+        state={audioUpload.state}
+        progressPercent={audioUpload.progressPercent}
+        errorMessage={audioUpload.errorMessage}
+      />
+
       {/* Interactive Controls & States */}
       <div className="flex flex-col items-center justify-center gap-4 py-2">
         {recordingState === 'idle' && (
@@ -174,20 +200,29 @@ export const RecordingStudio: React.FC = () => {
             <AudioPlayer audioUrl={audioUrl} durationMs={durationMs} onReset={handleReset} />
 
             <div className="flex items-center justify-end gap-3 mt-2">
-              <Button size="md" variant="outline" onClick={handleReset}>
+              <Button
+                size="md"
+                variant="outline"
+                onClick={handleReset}
+                disabled={isUploading}
+              >
                 Record Another Take
               </Button>
 
               <Button
                 size="md"
                 variant="primary"
-                disabled={durationMs < 5000}
+                disabled={durationMs < 5000 || isUploading || audioUpload.state === 'completed'}
                 className="gap-2"
-                onClick={() => {
-                  alert('Ready for Phase 5: Cloudflare Edge Storage & Multi-Agent Deliberation Pipeline!');
-                }}
+                onClick={handleSubmitToCoach}
               >
-                <span>Submit to AI Coach</span>
+                <span>
+                  {audioUpload.state === 'completed'
+                    ? 'Take Archived'
+                    : isUploading
+                    ? 'Archiving to Cloudflare...'
+                    : 'Submit to AI Coach'}
+                </span>
                 <Sparkles className="w-4 h-4" />
               </Button>
             </div>
